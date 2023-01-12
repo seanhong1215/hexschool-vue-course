@@ -90,18 +90,33 @@
                         placeholder="請輸入圖片連結"
                       />
                     </div>
-                    <img class="img-fluid" :src="tempProduct.imageUrl" alt="主圖" />
+                    <img class="img-fluid" v-if="tempProduct.imageUrl" :src="tempProduct.imageUrl" alt="主圖" />
                   </div>
-                  <div>
-                    <button
-                      class="btn btn-outline-primary btn-sm d-block w-100"
-                    >
-                      新增圖片
-                    </button>
+                  <h3 class="mb-3">多圖新增</h3>
+                  <div v-if="Array.isArray(tempProduct.imagesUrl)">
+                    <div class="mb-1" v-for="(image, key) in tempProduct.imagesUrl" :key="key">
+                      <div class="mb-3">
+                        <label for="imageUrl" class="form-label">圖片網址</label>
+                        <input v-model="tempProduct.imagesUrl[key]" type="text" class="form-control"
+                          placeholder="請輸入圖片連結">
+                      </div>
+                      <img class="img-fluid" :src="image">
+                    </div>
+                    <div v-if="!tempProduct.imagesUrl.length || tempProduct.imagesUrl[tempProduct.imagesUrl.length - 1]">
+                      <button class="btn btn-outline-primary btn-sm d-block w-100"
+                        @click="tempProduct.imagesUrl.push('')">
+                        新增圖片
+                      </button>
+                    </div>
+                    <div v-else-if="!tempProduct.imagesUrl.length < 1">
+                      <button class="btn btn-outline-danger btn-sm d-block w-100" @click="tempProduct.imagesUrl.pop()">
+                        刪除圖片
+                      </button>
+                    </div>
                   </div>
                   <div v-else>
-                    <button class="btn btn-outline-danger btn-sm d-block w-100">
-                      刪除圖片
+                    <button class="btn btn-outline-primary btn-sm d-block w-100" @click="createImages">
+                      新增圖片
                     </button>
                   </div>
                 </div>
@@ -144,7 +159,7 @@
                     <div class="mb-3 col-md-6">
                       <label for="origin_price" class="form-label">原價</label>
                       <input
-                        v-model="tempProduct.origin_price"
+                        v-model.number="tempProduct.origin_price"
                         id="origin_price"
                         type="number"
                         min="0"
@@ -155,7 +170,7 @@
                     <div class="mb-3 col-md-6">
                       <label for="price" class="form-label">售價</label>
                       <input
-                        v-model="tempProduct.price"
+                        v-model.number="tempProduct.price"
                         id="price"
                         type="number"
                         min="0"
@@ -285,7 +300,9 @@
             // products 產品資料
             products: [],
             // tempProduct 新增的資料
-            tempProduct: {},
+            tempProduct: {
+              imagesUrl: [],
+            },
           };
         },
         methods: {
@@ -334,6 +351,7 @@
                 }
               })
               .catch((err) => {
+                alert('取得商品失敗');
               });
           },
           deleteProduct() {
@@ -349,6 +367,10 @@
               .catch((err) => {
                 alert('商品刪除失敗');
               });
+          },
+          createImages() {
+            this.tempProduct.imagesUrl = [];
+            this.tempProduct.imagesUrl.push('');
           },
           checkLogin() {
             axios
