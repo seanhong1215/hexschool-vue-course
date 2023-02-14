@@ -1,4 +1,5 @@
 import userProductModal from './userProductModal.js';
+import { apiGetProducts, apiGetProduct, apiAddToCart, apiUpdateCart, apiDeleteAllCarts, apiGetCart, apiRemoveCartItem, apiCreateOrder } from './api.js';
 
 const { defineRule, Form, Field, ErrorMessage, configure } = VeeValidate;
 const { required, email, min, max } = VeeValidateRules;
@@ -15,8 +16,6 @@ configure({
   generateMessage: localize('zh_TW'),
 });
 
-const apiUrl = 'https://vue3-course-api.hexschool.io/v2';
-const apiPath = 'seanhong';
 
 Vue.createApp({
   data() {
@@ -45,17 +44,16 @@ Vue.createApp({
   },
   methods: {
     getProducts() {
-      const url = `${apiUrl}/api/${apiPath}/products`;
-      axios.get(url).then((response) => {
+      apiGetProducts().then((response) => {
         this.products = response.data.products;
+        console.log(this.products);
       }).catch((err) => {
         alert(err.response.data.message);
       });
     },
     getProduct(id) {
-      const url = `${apiUrl}/api/${apiPath}/product/${id}`;
       this.loadingStatus.loadingItem = id;
-      axios.get(url).then((response) => {
+      apiGetProduct(id).then((response) => {
         this.loadingStatus.loadingItem = '';
         this.product = response.data.product;
         this.$refs.userProductModal.openModal();
@@ -64,7 +62,6 @@ Vue.createApp({
       });
     },
     addToCart(id, qty = 1) {
-      const url = `${apiUrl}/api/${apiPath}/cart`;
       this.loadingStatus.loadingItem = id;
       const cart = {
         product_id: id,
@@ -72,7 +69,7 @@ Vue.createApp({
       };
 
       this.$refs.userProductModal.hideModal();
-      axios.post(url, { data: cart }).then((response) => {
+      apiAddToCart({data:cart}).then((response) => {
         alert(response.data.message);
         this.loadingStatus.loadingItem = '';
         this.getCart();
@@ -82,12 +79,11 @@ Vue.createApp({
     },
     updateCart(data) {
       this.loadingStatus.loadingItem = data.id;
-      const url = `${apiUrl}/api/${apiPath}/cart/${data.id}`;
       const cart = {
         product_id: data.product_id,
         qty: data.qty,
       };
-      axios.put(url, { data: cart }).then((response) => {
+      apiUpdateCart(data.id, {data:cart}).then((response) => {
         alert(response.data.message);
         this.loadingStatus.loadingItem = '';
         this.getCart();
@@ -97,8 +93,7 @@ Vue.createApp({
       });
     },
     deleteAllCarts() {
-      const url = `${apiUrl}/api/${apiPath}/carts`;
-      axios.delete(url).then((response) => {
+      apiDeleteAllCarts().then((response) => {
         alert(response.data.message);
         this.getCart();
       }).catch((err) => {
@@ -106,17 +101,16 @@ Vue.createApp({
       });
     },
     getCart() {
-      const url = `${apiUrl}/api/${apiPath}/cart`;
-      axios.get(url).then((response) => {
+      apiGetCart().then((response) => {
         this.cart = response.data.data;
+        console.log(this.cart);
       }).catch((err) => {
         alert(err.response.data.message);
       });
     },
     removeCartItem(id) {
-      const url = `${apiUrl}/api/${apiPath}/cart/${id}`;
       this.loadingStatus.loadingItem = id;
-      axios.delete(url).then((response) => {
+      apiRemoveCartItem(id).then((response) => {
         alert(response.data.message);
         this.loadingStatus.loadingItem = '';
         this.getCart();
@@ -125,9 +119,8 @@ Vue.createApp({
       });
     },
     createOrder() {
-      const url = `${apiUrl}/api/${apiPath}/order`;
       const order = this.form;
-      axios.post(url, { data: order }).then((response) => {
+      apiCreateOrder({ data: order }).then((response) => {
         alert(response.data.message);
         this.$refs.form.resetForm();
         this.getCart();
@@ -135,6 +128,7 @@ Vue.createApp({
         alert(err.response.data.message);
       });
     },
+
   },
   mounted() {
     this.getProducts();
